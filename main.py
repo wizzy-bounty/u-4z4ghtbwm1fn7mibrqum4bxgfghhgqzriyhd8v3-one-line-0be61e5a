@@ -46,13 +46,8 @@ ENTRY = (
 )
 
 
-def main() -> int:
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
-    os.makedirs(out_dir, exist_ok=True)
-    path = os.path.join(out_dir, "entry.txt")
-
-    # Gate self-check: UTF-8, 1-140 characters, one line, not whitespace.
-    text = ENTRY
+def validate_entry(text: str) -> int:
+    """Gate self-check: UTF-8, 1-140 characters, one line, not whitespace."""
     if not text.strip():
         print("gate FAIL: entry is only whitespace", file=sys.stderr)
         return 1
@@ -63,6 +58,19 @@ def main() -> int:
         print("gate FAIL: length %d outside 1-140" % len(text),
               file=sys.stderr)
         return 1
+    return 0
+
+
+def main() -> int:
+    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, "entry.txt")
+
+    # Gate self-check: UTF-8, 1-140 characters, one line, not whitespace.
+    gate = validate_entry(ENTRY)
+    if gate:
+        return gate
+    text = ENTRY
 
     with open(path, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(text)
